@@ -30,7 +30,6 @@ def handle_client(client_conn: socket.socket, username: str) -> None:
                 client_conn.sendall(b"[Server] FORMAT ERROR: Please begin your message with: @<username> <message>\n")
     except ConnectionResetError:
         print(f"[Server] ConnectionResetError with {username}")
-        pass 
     finally:
         print(f"[Server] {username} disconnected.")
         username_to_socket.pop(username, None)
