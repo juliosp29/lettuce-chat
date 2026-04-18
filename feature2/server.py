@@ -4,10 +4,10 @@ import argparse
 
 username_to_socket = {} # { username: socket }
 
-def handle_client(client_socket: socket.socket, username: str) -> None:
+def handle_client(client_conn: socket.socket, username: str) -> None:
     try:
         while True:
-            message_bytes = client_socket.recv(1024)
+            message_bytes = client_conn.recv(1024)
             
             # If empty bytes, then the client has disconnected
             if not message_bytes: break
@@ -25,16 +25,16 @@ def handle_client(client_socket: socket.socket, username: str) -> None:
                     message = f"[{username}]: {decoded_message}\n"
                     username_to_socket[target_username].sendall(message.encode("utf-8"))
                 else:
-                    client_socket.sendall(b"[Server] Target username was not recognized\n")
+                    client_conn.sendall(b"[Server] Target username was not recognized\n")
             else:
-                client_socket.sendall(b"[Server] FORMAT ERROR: Please begin your message with: @<username> <message>\n")
+                client_conn.sendall(b"[Server] FORMAT ERROR: Please begin your message with: @<username> <message>\n")
     except ConnectionResetError:
         print(f"[Server] ConnectionResetError with {username}")
         pass 
     finally:
         print(f"[Server] {username} disconnected.")
         username_to_socket.pop(username, None)
-        client_socket.close()
+        client_conn.close()
 
 def start_server(ip_address: str, port: int) -> None:
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -46,18 +46,18 @@ def start_server(ip_address: str, port: int) -> None:
 
     try:
         while True:
-            client_socket, address = server_socket.accept()
+            client_conn, address = server_socket.accept()
             print(f"[Server] Accepted connection from {address}")
 
-            client_socket.sendall(b"[Server] Successfully connected. Please enter your username: ")
+            client_conn.sendall(b"[Server] Successfully connected. Please enter your username: ")
 
-            response_bytes = client_socket.recv(1024)
+            response_bytes = client_conn.recv(1024)
             username = response_bytes.decode("utf-8").strip()
             
-            username_to_socket[username] = client_socket
+            username_to_socket[username] = client_conn
             print(f"[Server] User '{username}' registered.")
 
-            client_comm_thread = threading.Thread(target=handle_client, args=(client_socket, username))
+            client_comm_thread = threading.Thread(target=handle_client, args=(client_conn, username))
             client_comm_thread.start()
     except KeyboardInterrupt:
         print("\n[Server] Shutting down.")
