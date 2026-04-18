@@ -2,7 +2,7 @@ import socket
 import threading
 import argparse
 
-username_to_socket = {} # { username: socket }
+username_to_conn = {} # { username: socket }
 
 def handle_client(client_conn: socket.socket, username: str) -> None:
     try:
@@ -21,9 +21,9 @@ def handle_client(client_conn: socket.socket, username: str) -> None:
 
             if target_token.startswith("@") and len(target_token) > 1:
                 target_username = target_token[1:]
-                if target_username in username_to_socket:
+                if target_username in username_to_conn:
                     message = f"[{username}]: {decoded_message}\n"
-                    username_to_socket[target_username].sendall(message.encode("utf-8"))
+                    username_to_conn[target_username].sendall(message.encode("utf-8"))
                 else:
                     client_conn.sendall(b"[Server] Target username was not recognized\n")
             else:
@@ -32,7 +32,7 @@ def handle_client(client_conn: socket.socket, username: str) -> None:
         print(f"[Server] ConnectionResetError with {username}")
     finally:
         print(f"[Server] {username} disconnected.")
-        username_to_socket.pop(username, None)
+        username_to_conn.pop(username, None)
         client_conn.close()
 
 def start_server(ip_address: str, port: int) -> None:
@@ -53,7 +53,7 @@ def start_server(ip_address: str, port: int) -> None:
             response_bytes = client_conn.recv(1024)
             username = response_bytes.decode("utf-8").strip()
             
-            username_to_socket[username] = client_conn
+            username_to_conn[username] = client_conn
             print(f"[Server] User '{username}' registered.")
 
             client_comm_thread = threading.Thread(target=handle_client, args=(client_conn, username))

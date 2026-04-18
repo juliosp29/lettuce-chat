@@ -5,7 +5,7 @@ import threading
 from prompt_toolkit import prompt
 from prompt_toolkit.patch_stdout import patch_stdout
 
-def handle_server(client_socket: socket.socket) -> None:
+def listen_to_server(client_socket: socket.socket) -> None:
     try:
         while True:
             encoded_message = client_socket.recv(1024)
@@ -36,7 +36,7 @@ def start_client(server_ip_address: str, server_port: int) -> None:
     
     client_socket.sendall(username.encode("utf-8"))
 
-    thread = threading.Thread(target=handle_server, args=(client_socket,))
+    thread = threading.Thread(target=listen_to_server, args=(client_socket,))
     thread.start()
 
     try:
