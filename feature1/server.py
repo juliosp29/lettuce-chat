@@ -1,22 +1,7 @@
-# Algorithm 1: High-Level Server Logic — Broadcast Feature
-#
-# Create a TCP server socket and bind it to an IP address and port
-# Start listening for incoming client connections
-# Initialize an empty list to store connected clients
-#
-# while server is running:
-#     Accept a new client connection
-#     Add the client to the list of active clients
-#     Start a new thread to handle communication with that client
-# end while
-#
-# Client Handler (in each thread):
-# Continuously receive messages from the assigned client
-# For each received message, forward it to all other connected clients
-# If the client disconnects, close the connection and remove it from the list
-
 import socket
 import threading
+import argparse
+
 clients_lock = threading.Lock()  # Lock to synchronize access to the clients list
 clients: list[socket.socket] = []  # List to store connected client sockets
 
@@ -25,7 +10,7 @@ def broadcast(message: str, sender_socket: socket.socket) -> None:
         targets = [s for s in clients if s is not sender_socket]
     for sock in targets:
         try:
-            sock.sendall(message.encode())
+            sock.sendall(message.encode("utf-8"))
         except Exception:
             pass
 
@@ -38,8 +23,7 @@ def handle_client(connection: socket.socket, address: tuple) -> None:
             data = connection.recv(4096)
             if not data:
                 break
-            message = f"[{address[0]}:{address[1]}] {data.decode().strip()}\n"
-            print(f"[BROADCAST] {message.strip()}")
+            message = f"[{address[0]}:{address[1]}] {data.decode('utf-8').strip()}\n"
             broadcast(message, connection)
     except (ConnectionResetError, BrokenPipeError):
         pass
@@ -47,11 +31,11 @@ def handle_client(connection: socket.socket, address: tuple) -> None:
         with clients_lock:
             if connection in clients:
                 clients.remove(connection)
-        connection.close()
         print(f"[-] Client disconnected: {address}")
         broadcast(f"[Server] Client {address} has left the chat.\n", connection)
+        connection.close() 
 
-def start_server(host: str = "0.0.0.0", port: int = 5555) -> None:
+def start_server(host: str, port: int) -> None:
     server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_sock.bind((host, port))
@@ -60,10 +44,9 @@ def start_server(host: str = "0.0.0.0", port: int = 5555) -> None:
 
     try:
         while True:
-            connection, address= server_sock.accept()
+            connection, address = server_sock.accept()
             with clients_lock:
                 clients.append(connection)
-            # Each client gets its own thread
             t = threading.Thread(target=handle_client, args=(connection, address), daemon=True)
             t.start()
     except KeyboardInterrupt:
@@ -71,6 +54,10 @@ def start_server(host: str = "0.0.0.0", port: int = 5555) -> None:
     finally:
         server_sock.close()
 
-
 if __name__ == "__main__":
-    start_server()
+    parser = argparse.ArgumentParser(description="Server initialization for Broadcast Chat")
+    parser.add_argument("--ip", type=str, default="127.0.0.1", help="The IP Address of the server")
+    parser.add_argument("--port", type=int, default=5555, help="The port number to listen from")
+
+    args = parser.parse_args()
+    start_server(host=args.ip, port=args.port)
