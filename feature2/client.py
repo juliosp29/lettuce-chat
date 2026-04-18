@@ -2,6 +2,9 @@ import argparse
 import socket
 import threading
 
+from prompt_toolkit import prompt
+from prompt_toolkit.patch_stdout import patch_stdout
+
 def handle_server(client_socket: socket.socket) -> None:
     try:
         while True:
@@ -29,7 +32,7 @@ def start_client(server_ip_address: str, server_port: int) -> None:
 
     username_request_bytes = client_socket.recv(1024)
     username_request = username_request_bytes.decode("utf-8")
-    username = input(username_request)
+    username = prompt(username_request)
     
     client_socket.sendall(username.encode("utf-8"))
 
@@ -37,10 +40,11 @@ def start_client(server_ip_address: str, server_port: int) -> None:
     thread.start()
 
     try:
-        while True:
-            message = input("Enter message: ")
-            encoded_message = message.encode("utf-8")
-            client_socket.sendall(encoded_message)
+        with patch_stdout():
+            while True:
+                message = prompt("Enter message: ")
+                encoded_message = message.encode("utf-8")
+                client_socket.sendall(encoded_message)
     except KeyboardInterrupt:
         print(f"[Client] Shutting down.")
     finally:
