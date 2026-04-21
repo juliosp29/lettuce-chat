@@ -39,7 +39,7 @@ def start_server(ip_address: str, port: int) -> None:
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
     server_socket.bind((ip_address, port))
-    server_socket.listen()
+    server_socket.listen(10)
     
     print(f"[Server] Listening on {ip_address}:{port}")
 
