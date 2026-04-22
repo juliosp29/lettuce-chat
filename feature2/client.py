@@ -52,8 +52,8 @@ def start_client(server_ip_address: str, server_port: int) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Client initialization for unicast messaging")
-    parser.add_argument("ip", type=str, help="The IP Address of the SERVER you are trying to connect to.")
-    parser.add_argument("port", type=int, help="The port number that the SERVER will listen from")
+    parser.add_argument("--ip", type=str, default="127.0.0.1", help="The IP Address of the SERVER you are trying to connect to.")
+    parser.add_argument("--port", type=int, default=5555, help="The port number that the SERVER will listen from")
 
     args = parser.parse_args()
     start_client(server_ip_address=args.ip, server_port=args.port)

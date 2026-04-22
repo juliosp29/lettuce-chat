@@ -55,7 +55,7 @@ def start_server(host: str, port: int) -> None:
         server_sock.close()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Server initialization for Broadcast Chat")
+    parser = argparse.ArgumentParser(description="Server initialization for unicast messaging")
     parser.add_argument("--ip", type=str, default="127.0.0.1", help="The IP Address of the server")
     parser.add_argument("--port", type=int, default=5555, help="The port number to listen from")
 

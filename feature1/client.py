@@ -60,8 +60,8 @@ def start_client(server_ip: str, port: int) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Client initialization for Broadcast messaging")
-    parser.add_argument("--ip", type=str, default="127.0.0.1", help="The IP Address of the SERVER")
-    parser.add_argument("--port", type=int, default=5555, help="The port number of the SERVER")
+    parser.add_argument("--ip", type=str, default="127.0.0.1", help="The IP Address of the SERVER you are trying to connect to.")
+    parser.add_argument("--port", type=int, default=5555, help="The port number that the SERVER will listen from")
 
     args = parser.parse_args()
     start_client(server_ip=args.ip, port=args.port)

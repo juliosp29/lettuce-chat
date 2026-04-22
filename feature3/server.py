@@ -123,7 +123,8 @@ def start_server(ip_address: str, port: int) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Feature 3 framed chat server")
-    parser.add_argument("--ip", type=str, default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=5555)
+    parser.add_argument("--ip", type=str, default="127.0.0.1", help="The IP Address of the server")
+    parser.add_argument("--port", type=int, default=5555, help="The port number to listen from")
+
     args = parser.parse_args()
     start_server(ip_address=args.ip, port=args.port)
